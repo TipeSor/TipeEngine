@@ -8,6 +8,7 @@ namespace TipeEngine
     {
         static List<TipeObject> objects = new List<TipeObject>();
 
+        static Vector2f originalPosition;
         static TipeObject? currentHeld;
 
         static void Main(string[] args)
@@ -29,6 +30,7 @@ namespace TipeEngine
                     }
                     else
                     {
+                        currentHeld.Position = originalPosition;
                         currentHeld = null;
                     }
                 }
