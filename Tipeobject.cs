@@ -5,6 +5,8 @@ namespace TipeEngine
 {
     public class TipeObject : ConvexShape
     {
+        public bool enabled {get; private set; }
+
         private Vector2f[] points;
         public Vector2f Size;
 
@@ -43,6 +45,11 @@ namespace TipeEngine
             }
 
             return message;
+        }
+
+        public void SetActive(bool value)
+        {
+            enabled = value;
         }
     }
 }
