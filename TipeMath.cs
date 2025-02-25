@@ -17,7 +17,12 @@ namespace TipeEngine
 
         static public float Deg2Rad(float degree)
         {
-            return degree * 0.017f;
+            return degree * 0.01745329251f;
+        }
+
+        static public float Rad2Deg(float radian)
+        {
+            return radian * 57.2957795131f;
         }
     }
 }
