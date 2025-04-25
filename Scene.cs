@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace TipeEngine
 {
@@ -28,52 +27,49 @@ namespace TipeEngine
 
         public virtual void Load() { }
 
-        internal virtual void Update()
+        public virtual void InternalUpdate()
         {
-            /*
             foreach (GameObject obj in Objects)
             {
-                obj.Update();
+                obj.InternalUpdate();
             }
-            */
-            _ = Parallel.ForEach(Objects, static obj => obj.Update());
-            OnUpdate();
+            Update();
         }
 
-        protected virtual void OnUpdate() { }
+        public virtual void Update() { }
 
-        internal virtual void Draw()
+        public virtual void InternalDraw()
         {
             foreach (GameObject obj in Objects)
             {
-                obj.Draw();
+                obj.InternalDraw();
             }
-            OnDraw();
+            Draw();
         }
 
-        protected virtual void OnDraw() { }
+        public virtual void Draw() { }
 
-        internal virtual void GUI()
+        public virtual void InternalGUI()
         {
             foreach (GameObject obj in Objects)
             {
-                obj.GUI();
+                obj.InternalGUI();
             }
-            OnGUI();
+            GUI();
         }
 
-        protected virtual void OnGUI() { }
+        public virtual void GUI() { }
 
-        internal virtual void Unload()
+        public virtual void InternalUnload()
         {
             foreach (GameObject obj in Objects)
             {
-                obj.Unload();
+                obj.InternalUnload();
             }
             Objects.Clear();
-            OnUnload();
+            Unload();
         }
 
-        protected virtual void OnUnload() { }
+        public virtual void Unload() { }
     }
 }

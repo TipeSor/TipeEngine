@@ -1,6 +1,5 @@
 using System;
 using Raylib_cs;
-using TipeMath;
 
 namespace TipeEngine
 {
@@ -19,23 +18,21 @@ namespace TipeEngine
             Raylib.InitWindow((int)Screen.W, (int)Screen.H, "Game");
             Raylib.SetTargetFPS(TargetFPS);
 
+            ResourceManager.CacheComponents();
+
             OnGameStart?.Invoke();
 
             SceneManager.LoadScene(0);
             Font font = Raylib.LoadFont("assets/Roboto-Regular.ttf");
             while (!Raylib.WindowShouldClose())
             {
-                SceneManager.ActiveScene.Update();
-                if (Input.GetKeyDown(KeyboardKey.G))
-                {
-                    SceneManager.Next();
-                }
+                SceneManager.ActiveScene.InternalUpdate();
 
                 Raylib.BeginDrawing();
                 Raylib.ClearBackground(Color.Black);
 
-                SceneManager.ActiveScene.Draw();
-                SceneManager.ActiveScene.GUI();
+                SceneManager.ActiveScene.InternalDraw();
+                SceneManager.ActiveScene.InternalGUI();
 
                 string data = $"FPS: {Raylib.GetFPS()}\nScene: {SceneManager.ActiveScene.Name}\nDebug: {Debug}\nObjects: {SceneManager.ActiveScene.Objects.Count}";
                 Raylib.DrawTextEx(font, data, new Vector2(10, 10), 32, 1, Color.White);

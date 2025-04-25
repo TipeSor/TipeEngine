@@ -1,5 +1,4 @@
 using Raylib_cs;
-using TipeMath;
 
 namespace TipeEngine
 {
@@ -12,7 +11,7 @@ namespace TipeEngine
         public void Draw()
         {
             Rect rect = gameObject.rect;
-            Raylib.DrawRectangle((int)rect.X, (int)rect.Y, (int)rect.W, (int)rect.H, color);
+            Raylib.DrawRectangleRec(rect, color);
         }
     }
 
@@ -60,6 +59,11 @@ namespace TipeEngine
             Vector2 origin = new(0, 0);
 
             Raylib.DrawTexturePro(texture, sourceRect, destRect, origin, 0f, tint);
+        }
+
+        public void Unload()
+        {
+            Raylib.UnloadTexture(texture);
         }
     }
 

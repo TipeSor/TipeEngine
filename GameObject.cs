@@ -1,80 +1,84 @@
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using TipeMath;
 namespace TipeEngine
 {
     public abstract class GameObject
     {
         public Rect rect { get; set; }
-        internal readonly List<IComponent> components = [];
+        internal readonly Dictionary<Type, IComponent> components = [];
 
         public GameObject(Rect _rect)
         {
             rect = _rect;
         }
 
-        public void AddComponent(IComponent component)
+        public bool AddComponent(IComponent component)
         {
-            components.Add(component);
+            if (components.ContainsKey(component.GetType()))
+            {
+                return false;
+            }
+            components[component.GetType()] = component;
+            return true;
         }
 
         public bool RemoveComponent(IComponent component)
         {
-            return components.Remove(component);
+            return components.Remove(component.GetType());
         }
 
         public T? GetComponent<T>() where T : class, IComponent
         {
-            return components.OfType<T>().FirstOrDefault();
+            return components.TryGetValue(typeof(T), out IComponent? component) ? (T?)component : null;
         }
 
-        internal void Update()
+        public virtual void InternalUpdate()
         {
-            foreach (IComponent component in components)
+            foreach (IComponent component in components.Values)
             {
                 component.Update();
             }
 
-            OnUpdate();
+            Update();
         }
 
-        protected virtual void OnUpdate() { }
+        public virtual void Update() { }
 
-        internal void Draw()
+        public virtual void InternalDraw()
         {
-            foreach (IComponent component in components)
+            foreach (IComponent component in components.Values)
             {
                 component.Draw();
             }
 
-            OnDraw();
+            Draw();
         }
 
-        protected virtual void OnDraw() { }
+        public virtual void Draw() { }
 
-        internal void GUI()
+        public virtual void InternalGUI()
         {
-            foreach (IComponent component in components)
+            foreach (IComponent component in components.Values)
             {
                 component.GUI();
             }
 
-            OnGUI();
+            GUI();
         }
 
-        protected virtual void OnGUI() { }
+        public virtual void GUI() { }
 
-        internal void Unload()
+        public virtual void InternalUnload()
         {
-            foreach (IComponent component in components)
+            foreach (IComponent component in components.Values)
             {
                 component.Unload();
             }
 
-            OnUnload();
+            Unload();
         }
 
-        protected virtual void OnUnload() { }
+        public virtual void Unload() { }
 
         public void Move(Vector2 delta)
         {

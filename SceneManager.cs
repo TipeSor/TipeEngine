@@ -32,7 +32,8 @@ namespace TipeEngine
             Scene NewScene = Scenes[sceneIndex]();
 
             ActiveScene = NewScene;
-            OldScene?.Unload();
+            OldScene?.InternalUnload();
+            ResourceManager.ClearObjects();
 
             NewScene.Load();
             NewScene.Start();
