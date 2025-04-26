@@ -28,5 +28,25 @@ namespace TipeEngine
         {
             return Raylib.IsKeyUp(key);
         }
+
+        public static Vector2 GetMousePosition()
+        {
+            return Raylib.GetMousePosition();
+        }
+
+        public static Vector2 GetMouseDelta()
+        {
+            return Raylib.GetMouseDelta();
+        }
+
+        public static float GetMouseWheelMove()
+        {
+            return Raylib.GetMouseWheelMove();
+        }
+
+        public static Vector2 GetMouseWheelMoveV()
+        {
+            return Raylib.GetMouseWheelMoveV();
+        }
     }
 }
