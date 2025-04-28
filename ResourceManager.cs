@@ -12,7 +12,7 @@ namespace TipeEngine
 {
     public static class ResourceManager
     {
-        private static readonly Dictionary<string, object> loadedObject = [];
+        private static readonly Dictionary<string, object> loadedObjects = [];
         private static readonly Dictionary<string, Type> ComponentCache = [];
 
         private static readonly Dictionary<Type, Func<string, object>> CustomDeserializers = new()
@@ -80,7 +80,7 @@ namespace TipeEngine
                     }
 
                     IComponent component = LoadComponent(componentObject, gameObject);
-                    gameObject.AddComponent(component);
+                    _ = gameObject.AddComponent(component);
                 }
             }
 
@@ -152,18 +152,34 @@ namespace TipeEngine
 
         private static T LoadWithCache<T>(string path, Func<string, T> loader)
         {
-            if (loadedObject.TryGetValue(path, out object? cache) && cache is T t)
+            if (loadedObjects.TryGetValue(path, out object? cache) && cache is T t)
             {
                 return t;
             }
             T result = loader(path);
-            loadedObject[path] = result!;
+            loadedObjects[path] = result!;
             return result;
         }
 
         public static void ClearObjects()
         {
-            loadedObject.Clear();
+            foreach (object loadedObject in loadedObjects.Values)
+            {
+                if (loadedObject is Sound sound)
+                {
+                    Raylib.UnloadSound(sound);
+                }
+                else if (loadedObject is Image image)
+                {
+                    Raylib.UnloadImage(image);
+                }
+                else if (loadedObject is Texture2D texture)
+                {
+                    Raylib.UnloadTexture(texture);
+                }
+            }
+
+            loadedObjects.Clear();
         }
     }
 }

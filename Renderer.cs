@@ -60,11 +60,6 @@ namespace TipeEngine
 
             Raylib.DrawTexturePro(texture, sourceRect, destRect, origin, 0f, tint);
         }
-
-        public void Unload()
-        {
-            Raylib.UnloadTexture(texture);
-        }
     }
 
     public class DebugRenderer(GameObject _gameObject) : IComponent
