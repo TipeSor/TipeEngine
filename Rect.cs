@@ -1,7 +1,29 @@
+using System;
+
 namespace TipeEngine
 {
     public struct Rect
     {
+        public static bool operator ==(Rect a, Rect b)
+        {
+            return a.X == b.X && a.Y == b.Y && a.W == b.W && a.H == b.H;
+        }
+
+        public static bool operator !=(Rect a, Rect b)
+        {
+            return !(a == b);
+        }
+
+        public override readonly bool Equals(object? obj)
+        {
+            return obj is Rect other && this == other;
+        }
+
+        public override readonly int GetHashCode()
+        {
+            return HashCode.Combine(X, Y, W, H);
+        }
+
         public static Rect Zero => new(0, 0, 0, 0);
 
         public readonly Vector2 Center => new(X + (W / 2f), Y + (H / 2f));
@@ -39,6 +61,12 @@ namespace TipeEngine
                      X > other.X + other.W ||
                      Y + H < other.Y ||
                      Y > other.Y + other.H);
+        }
+
+        public readonly bool Contains(Vector2 point)
+        {
+            return point.X >= X && point.X <= X + W &&
+                   point.Y >= Y && point.Y <= Y + H;
         }
 
         public override readonly string ToString()

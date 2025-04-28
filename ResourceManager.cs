@@ -13,7 +13,7 @@ namespace TipeEngine
     public static class ResourceManager
     {
         private static readonly Dictionary<string, object> loadedObjects = [];
-        private static readonly Dictionary<string, Type> ComponentCache = [];
+        private static readonly Dictionary<string, ComponentContext> ComponentCache = [];
 
         private static readonly Dictionary<Type, Func<string, object>> CustomDeserializers = new()
         {
@@ -25,11 +25,29 @@ namespace TipeEngine
 
         internal static void CacheComponents()
         {
-            AppDomain.CurrentDomain.GetAssemblies()
+            foreach (Type type in AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(static a => a.GetTypes())
-                .Where(static t => typeof(IComponent).IsAssignableFrom(t))
-                .ToList()
-                .ForEach(static t => { ComponentCache[$"{t.FullName}"] = t; });
+                .Where(static t => typeof(IComponent).IsAssignableFrom(t)))
+            {
+                string name = type.FullName ?? throw new UnreachableException("some how.... a type has no name and you are to blame...");
+
+                ConstructorInfo[] constructors = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
+
+                if (constructors.Length == 0)
+                {
+                    continue;
+                }
+
+                ConstructorInfo constructor =
+                    constructors.FirstOrDefault(static c => Attribute.IsDefined(c, typeof(PreferredConstructorAttribute))) ??
+                    constructors.FirstOrDefault() ??
+                    throw new UnreachableException("you have broken reality and all hope is lost");
+
+                ParameterInfo[] parameters = constructor.GetParameters();
+
+                ComponentContext context = new(type, constructor);
+                ComponentCache[name] = context;
+            }
         }
 
         public static T LoadGameObject<T>() where T : GameObject
@@ -92,20 +110,18 @@ namespace TipeEngine
             string componentTypeName = componentObject["type"]?.ToString() ??
                 throw new SerializationException("failed to get component type");
 
-            if (!ComponentCache.TryGetValue(componentTypeName, out Type? componentType))
+            if (!ComponentCache.TryGetValue(componentTypeName, out ComponentContext? componentContext))
             {
-                throw new SerializationException($"can't find type `{componentTypeName}`");
+                throw new SerializationException($"can't find component context of `{componentTypeName}`");
             }
 
-            if (componentType == null)
+            if (componentContext == null)
             {
-                throw new UnreachableException($"Somehow {componentType} is null... ¯\\_(ツ)_/¯");
+                throw new UnreachableException($"Somehow {componentContext} is null... ¯\\_(ツ)_/¯");
             }
 
-            ConstructorInfo[] constructors = componentType.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
-            ConstructorInfo? constructor = constructors.FirstOrDefault();
-            ParameterInfo[] parameters = constructor?.GetParameters() ??
-                throw new MissingMethodException($"No public constructor found for type {componentTypeName}.");
+            ConstructorInfo constructor = componentContext.constructor;
+            ParameterInfo[] parameters = componentContext.parameters;
             List<object> parameterList = [];
             foreach (ParameterInfo parameter in parameters)
             {
@@ -181,5 +197,25 @@ namespace TipeEngine
 
             loadedObjects.Clear();
         }
+    }
+
+    public class ComponentContext
+    {
+        public Type type { get; }
+        public ConstructorInfo constructor { get; }
+        public ParameterInfo[] parameters { get; }
+
+        public ComponentContext(Type _type, ConstructorInfo _constructor)
+        {
+            type = _type;
+            constructor = _constructor;
+            parameters = constructor.GetParameters();
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Constructor, AllowMultiple = false)]
+    public class PreferredConstructorAttribute : Attribute
+    {
+        public PreferredConstructorAttribute() { }
     }
 }
