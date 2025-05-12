@@ -20,7 +20,7 @@ namespace TipeEngine
             { typeof(Texture2D), static path => LoadTexture(path) },
             { typeof(Image), static path => LoadImage(path) },
             { typeof(Sound), static path => LoadSound(path) },
-            { typeof(GameObject), static _ => throw new NotSupportedException($"can't deserialize a GameObject") } // its a pain and i cant be bothered to deal with
+            { typeof(GameObject), static _ => throw new NotSupportedException($"can't deserialize a nested GameObject") }
         };
 
         internal static void CacheComponents()
@@ -29,7 +29,7 @@ namespace TipeEngine
                 .SelectMany(static a => a.GetTypes())
                 .Where(static t => typeof(IComponent).IsAssignableFrom(t)))
             {
-                string name = type.FullName ?? throw new UnreachableException("some how.... a type has no name and you are to blame...");
+                string name = type.FullName ?? throw new UnreachableException("some how.... a type has no name...");
 
                 ConstructorInfo[] constructors = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
 
@@ -41,7 +41,7 @@ namespace TipeEngine
                 ConstructorInfo constructor =
                     constructors.FirstOrDefault(static c => Attribute.IsDefined(c, typeof(PreferredConstructorAttribute))) ??
                     constructors.FirstOrDefault() ??
-                    throw new UnreachableException("you have broken reality and all hope is lost");
+                    throw new UnreachableException("There are more than 0 contstructors yet it failed to get the first one");
 
                 ParameterInfo[] parameters = constructor.GetParameters();
 
@@ -50,25 +50,14 @@ namespace TipeEngine
             }
         }
 
-        public static T LoadGameObject<T>() where T : GameObject
+        public static T LoadGameObject<T>(string path, string variant = "") where T : GameObject
         {
-            return (T)LoadGameObject(typeof(T));
+            return (T)LoadGameObject(path, typeof(T), variant);
         }
 
-        public static T LoadGameObject<T>(string variant) where T : GameObject
-        {
-            return (T)LoadGameObject(typeof(T), variant);
-        }
-
-        public static object LoadGameObject(Type type)
-        {
-            return LoadGameObject(type, "");
-        }
-
-        public static object LoadGameObject(Type type, string variant)
+        public static object LoadGameObject(string path, Type type, string variant = "")
         {
 
-            string path = "assets/objects/";
             path += string.IsNullOrEmpty(variant) ? $"{type.Name}.json" : $"{type.Name}_{variant}.json";
             string json = File.ReadAllText(path);
             JObject root = JObject.Parse(json);
