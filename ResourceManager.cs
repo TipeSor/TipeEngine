@@ -57,7 +57,6 @@ namespace TipeEngine
 
         public static object LoadGameObject(string path, Type type, string variant = "")
         {
-
             path += string.IsNullOrEmpty(variant) ? $"{type.Name}.json" : $"{type.Name}_{variant}.json";
             string json = File.ReadAllText(path);
             JObject root = JObject.Parse(json);
@@ -99,14 +98,9 @@ namespace TipeEngine
             string componentTypeName = componentObject["type"]?.ToString() ??
                 throw new SerializationException("failed to get component type");
 
-            if (!ComponentCache.TryGetValue(componentTypeName, out ComponentContext? componentContext))
+            if (!ComponentCache.TryGetValue(componentTypeName, out ComponentContext componentContext))
             {
                 throw new SerializationException($"can't find component context of `{componentTypeName}`");
-            }
-
-            if (componentContext == null)
-            {
-                throw new UnreachableException($"Somehow {componentContext} is null... ¯\\_(ツ)_/¯");
             }
 
             ConstructorInfo constructor = componentContext.constructor;
@@ -188,11 +182,11 @@ namespace TipeEngine
         }
     }
 
-    public class ComponentContext
+    public readonly struct ComponentContext
     {
-        public Type type { get; }
-        public ConstructorInfo constructor { get; }
-        public ParameterInfo[] parameters { get; }
+        public readonly Type type { get; }
+        public readonly ConstructorInfo constructor { get; }
+        public readonly ParameterInfo[] parameters { get; }
 
         public ComponentContext(Type _type, ConstructorInfo _constructor)
         {
